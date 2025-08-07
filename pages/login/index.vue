@@ -1,5 +1,6 @@
 <script setup>
 import { useUserStore } from "~/stores/user";
+import {useState} from '#app'
 const userStore = useUserStore();
 let login = useState("login", () => "");
 let password = useState("password", () => "");

@@ -576,8 +576,8 @@ setInterval(() => {
     method: "POST",
     body: JSON.stringify({
       color: color,
-      costTOB: costTOBN*25,
-      bottom: bottom*25,
+      costTOB: costTOBN,
+      bottom: bottom,
       actual: price,
       actual1: price,
       actualGlobal: priceBefore,

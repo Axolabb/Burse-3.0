@@ -13,19 +13,24 @@ async function costGetting() {
   actual1.value = response[response.length - 1].actual1;
 }
 const track = ref(null)
+const trackHorizontalPiece = ref(20)
+const trackVericalPiece = ref(20)
 onMounted(() => {
   costGetting();
   setInterval(costGetting, 2000);
-  
-  console.log('ex')
-  
-});
-watch(track, (newVal, oldVal) => {
-    console.log('se')
 
-      console.log(track.value)
-    
+  const TrackWatcher = new ResizeObserver(() => {
+    let widthRaw = getComputedStyle(track.value).width
+    let heightRaw = getComputedStyle(track.value).height
+    let widthClear = parseFloat(widthRaw.replace(/[^\d.-]/g, '')) / 50
+    let heightClear = parseFloat(heightRaw.replace(/[^\d.-]/g, '')) / 100
+    trackHorizontalPiece.value = widthClear
+    trackVericalPiece.value = heightClear
   })
+  TrackWatcher.observe(track.value)
+});
+
+
 // Стартовые данные
 let costs = ref([]); // Данные о ценах
 let actual1 = ref(450); // Стартовая цена
@@ -94,7 +99,7 @@ function sell() {
   <div class="flex justify-center">
     <p class="default_text ">Course of Ⓛ-coin! <span class="text-yellow-200">Ⓛ-coin = {{
       actual1
-        }}$</span></p>
+        }}$ </span> </p>
   </div>
   <div class="px-20 h-[80vh] flex  justify-around items-center">
     <div class="max-w-80 flex-column w-full">
@@ -121,22 +126,27 @@ function sell() {
       </div>
     </div>
 
-    <div ref="track" class="max-w-[1000px]  relative h-full w-full border border-white flex items-end overflow-hidden">
-      <div class="relative min-w-[15px] border border-white " v-for="cost in costs"
-        :class="[cost.color === 'red' ? 'scale-y-[-1]' : '']" :style="{
-          bottom: cost.bottom + 'px',
-          height: cost.costTOB + 'px',
-
-        }">_
-        <div class="origin-bottom-left w-[2px] rounded left-0 bottom-0 absolute" :style="{
-          'background-color': cost.color,
-          height: cost.diagonal + 100 / cost.diagonal + 'px',
-
-          transform: 'rotate(' + (90 - (Math.atan(cost.costTOB / 15) * 180) / Math.PI) + 'deg)',
-        }"></div>
+    <div ref="track" class="max-w-[1000px]  relative h-full w-full border border-white flex items-end pt-[100px]  ">  
+      <div class="absolute flex flex-col-reverse w-full opacity-10 ">  
+        <div class=" text-left z-100 border-top border-white  bg-red-500"  v-for="i in Math.ceil(actual1/10)+3"  
+        :style="{ height: 25*trackVericalPiece + 'px' }"><span class="text-white text-4xl pl-3"> {{ i*25 }} $</span></div> 
       </div>
-      <span class="absolute text-right bg-white w-[100%] h-px w-100 transition-all"
-        :style="{ bottom: actual1 * 25 + 'px' }"><span class="relative text-white text-4xl ">{{ actual1
+      <div class="relative shrink-0  border" v-for="cost in costs" :class="[cost.color === 'red' ? 'scale-y-[-1]' : '']"
+        :style="{
+          bottom: cost.bottom*trackVericalPiece + 'px',
+          height: cost.costTOB*trackVericalPiece + 'px',
+          width: trackHorizontalPiece + 'px'
+        }">
+        <div class="origin-bottom-left w-px left-0 bottom-0 absolute z-[1]" :style="{
+          'background-color': cost.color,
+          height: Math.sqrt(Math.pow(cost.costTOB*trackVericalPiece, 2) + Math.pow(trackHorizontalPiece, 2)) + 'px',
+          transform: 'rotate(' + ((Math.atan2(trackHorizontalPiece/trackVericalPiece, cost.costTOB)) * (180 / Math.PI)) + 'deg)',
+        }"></div>
+        <div class="w-px h-px  absolute right-0 top-0 z-[10] "
+          :class="[cost.color === 'red' ? 'bg-red-300' : 'bg-green-300']"></div>
+      </div>
+      <span class="absolute text-right bg-white w-[100%] h-px w-100 transition-all z-100"  
+        :style="{ bottom: actual1*trackVericalPiece + 'px' }"><span class="relative top-[-4vh] text-white text-4xl ">{{ actual1
         }}$</span></span>
     </div>
   </div>

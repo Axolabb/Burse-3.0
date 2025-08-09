@@ -1,4 +1,6 @@
 <script setup>
+import { definePageMeta } from '#imports'
+// definePageMeta({ middleware: ["check"] });
 import { computed } from "vue";
 import { useUserStore } from "~/stores/user";
 const userStore = useUserStore();
@@ -11,7 +13,6 @@ const balanse = computed(() => userData.value.balanse || 0);
 const bitbalanse = computed(() => userData.value.bitbalanse || 0);
 const createdAt = computed(() => userData.value.createdAt || "");
 const icon = computed(() => userData.value.icon || "");
-// definePageMeta({ middleware: ["check"] });
 </script>
 <template>
   <div class="flex justify-center ">

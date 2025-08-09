@@ -501,13 +501,14 @@ function generateSingleEvent(chance = 0.5) {
 }
 
 let price = 1;
+let priceBefore = 1
 let x = 0;
 let cycle = 0;
-let cycleTime = 3000;
+let cycleTime = 2000;  
 function lessAttentionTact(array, cycleEnd) {
-  let less = ((array.x / array.time) * array.vector) / 10;
-  let lessAttent = setInterval(() => {
-    if (cycle <= cycleEnd) {
+  let less = ((array.x / array.time) * array.vector) / 10  
+  let lessAttent = setInterval(() => { 
+    if (cycle <= cycleEnd) { 
       x -= less;
     } else {
       clearInterval(lessAttent)
@@ -517,7 +518,8 @@ function lessAttentionTact(array, cycleEnd) {
 let action_chanse = 0.9;
 let salty = 0;
 setInterval(() => {
-  let NegativeActionChance = Math.log10(price) / 3;
+  priceBefore = price
+  let NegativeActionChance = Math.log10(price) / 4.5 ;
   if (Math.random() > action_chanse) {
     let array = generateSingleEvent(NegativeActionChance);
     let boost = Math.min(1 / price, 30);
@@ -560,7 +562,8 @@ setInterval(() => {
   let color = "";
   let costTOBN = 0;
   let bottom = 0;
-  let priceBefore = price - price * x - 0.00001 
+  
+
   if (price >= priceBefore) {
     color = "green";
     costTOBN = price - priceBefore;

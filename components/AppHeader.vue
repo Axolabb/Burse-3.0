@@ -1,7 +1,7 @@
 <template>
   <p class="h-24"></p>
   <div
-    class="w-full top-0 fixed bg-gradient-to-b from-[#1b1b1bcc] via-[#1b1b1bcc] via-90%  to-[#8e8e8e00] z-[1] px-20 text-4xl">
+    class="w-full top-0 fixed bg-gradient-to-b from-[#1b1b1bcc] via-[#1b1b1bcc] via-90%  to-[#8e8e8e00] z-[100] px-20 text-4xl">
     <div class=" flex items-center justify-between ">
       <a href="/" class="text-white no-underline ">
         <div class="flex items-center  ">

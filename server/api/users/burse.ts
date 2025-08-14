@@ -17,10 +17,7 @@ export default defineEventHandler(async (event) => {
       costTOB: body.costTOB,
       bottom: body.bottom,
       actual: body.actual,
-      actual1: body.actual1,
-      actualGlobal: body.actualGlobal,
-      angle: body.angle,
-      diagonal: body.diagonal,
+
     });
     await price.save();
     return response

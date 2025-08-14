@@ -6,10 +6,6 @@ const PriceSchema = new Schema(
     costTOB: Number,
     bottom: Number,
     actual: Number,
-    actual1: Number,
-    actualGlobal: Number,
-    angle: Number,
-    diagonal: Number,
   },
   {
     timestamps: true,

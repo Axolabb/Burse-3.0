@@ -1,12 +1,12 @@
-const EVENT_CATEGORIES = [
-  "Криптовалюты",
-  "Фондовый рынок",
-  "Макроэкономика",
-  "Технологии",
-  "Геополитика",
-  "Природные катастрофы/Здоровье",
-  "Корпоративные новости",
-];
+// const EVENT_CATEGORIES = [
+//   "Криптовалюты",
+//   "Фондовый рынок",
+//   "Макроэкономика",
+//   "Технологии",
+//   "Геополитика",
+//   "Природные катастрофы/Здоровье",
+//   "Корпоративные новости",
+// ];
 
 const POSITIVE_EVENT_TEMPLATES = [
   // Криптовалюты
@@ -215,7 +215,7 @@ const NEGATIVE_EVENT_TEMPLATES = [
   {
     name: [
       "Эскалация конфликта",
-      "Санкции против страны {country}",
+      "Санкции против страны {Country2}",
       "Торговая война",
     ],
     text: [
@@ -500,34 +500,76 @@ function generateSingleEvent(chance = 0.5) {
   };
 }
 
-let price = 1;
-let priceBefore = 1
+// let actualData = null;
+// await fetch("http://localhost:3000/api/users/burseGet")
+//   .then((response) => {
+//     if (!response.ok) {
+//       throw new Error(response.status);
+//     }
+//     return response.json();
+//   })
+//   .then((data) => {
+//     if (data.length > 0) {
+//       actualData = data[data.length - 1].actualGlobal;
+//     } else {
+//       actualData = 1;
+//     }
+//   });
+
+import { WebSocketServer } from "ws";
+const server = new WebSocketServer({ port: 8080 });
+
+let ActualSocket = null;
+
+server.on("connection", (socket) => {
+  ActualSocket = socket;
+  console.log("Клиент подключился");
+
+  // socket.on("message", (message) => {
+  //   console.log("Получено сообщение:", message);
+  //   socket.send(`Эхо: ${message}`);
+  // });
+
+  socket.on("close", () => {
+    console.log("Клиент отключился");
+  });
+});
+
+let price = 0;
+let priceBefore = 1;
 let x = 0;
 let cycle = 0;
-let cycleTime = 2000;  
+let cycleTime = 2000;
 function lessAttentionTact(array, cycleEnd) {
-  let less = ((array.x / array.time) * array.vector) / 10  
-  let lessAttent = setInterval(() => { 
-    if (cycle <= cycleEnd) { 
+  let less = ((array.x / array.time) * array.vector) / 10;
+  let lessAttent = setInterval(() => {
+    if (cycle <= cycleEnd) {
       x -= less;
     } else {
-      clearInterval(lessAttent)
+      clearInterval(lessAttent);
     }
   }, cycleTime);
 }
 let action_chanse = 0.9;
 let salty = 0;
 setInterval(() => {
-  priceBefore = price
-  let NegativeActionChance = Math.log10(price) / 4.5 ;
+  priceBefore = price;
+  let NegativeActionChance = Math.log10(price) / 4.5;
+
   if (Math.random() > action_chanse) {
     let array = generateSingleEvent(NegativeActionChance);
     let boost = Math.min(1 / price, 30);
     array.x = array.x + boost;
     x = x + (array.x * array.vector) / 10;
     x = parseFloat(x.toFixed(3));
-    price = price + price * x + 0.00001 < 0 ? 0 : price + price * x + 0.00001;
+    let zeroSalt =
+      price + price * x - price < 0.1 && price + price * x - price > -0.1
+        ? 0.1
+        : 0; // костыль от невидимого курса при мелких значениях
+    price = price + price * x + zeroSalt;
+
     action_chanse = 0.9;
+
     console.log(`🆔 ID события: ${array.id}`);
     console.log(`📛 Название: ${array.name}`);
     console.log(`📝 Описание: ${array.text}`);
@@ -538,10 +580,25 @@ setInterval(() => {
     );
     console.log(`⏳ Время действия: ${array.time} тактов`);
     console.log("==========================================================\n");
+    if (ActualSocket !== null) {
+      const now = new Date();
+      ActualSocket.send(
+        JSON.stringify({
+          name: array.name,
+          text: array.text,
+          time: `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}:${String(now.getSeconds()).padStart(2, "0")}`
+        })
+      );
+    }
     lessAttentionTact(array, array.time + cycle);
   } else {
     action_chanse -= 0.05;
-    price = price + price * x + 0.00001 < 0 ? 0 : price + price * x + 0.00001;
+    let zeroSalt =
+      price + price * x - price < 0.1 && price + price * x - price > -0.1
+        ? 0.1
+        : 0; // костыль от невидимого курса при мелких значениях
+    price = price + price * x + zeroSalt;
+
     console.log("📊 Информация о текущем такте:");
     console.log(`🔁 Такт: ${cycle}`);
     console.log(`💲 Курс: ${price.toFixed(5)}$`);
@@ -554,15 +611,15 @@ setInterval(() => {
     console.log("==========================================================\n");
   }
   let saltVector = getRandomFloat(0, 1) > 0.5 ? 1 : -1;
-  x, (salty += 0.001 * saltVector);
+  salty += 0.001 * saltVector;
+  // x += 0.001 * saltVector
+  price = price + price * salty;
   price = parseFloat(price.toFixed(5));
   x = parseFloat(x.toFixed(3));
-
 
   let color = "";
   let costTOBN = 0;
   let bottom = 0;
-  
 
   if (price >= priceBefore) {
     color = "green";
@@ -573,7 +630,7 @@ setInterval(() => {
     costTOBN = priceBefore - price;
     bottom = price;
   }
-  const angleDeg = (Math.atan(costTOBN*25 / 35) * 180) / Math.PI
+  // const angleDeg = (Math.atan((costTOBN * 25) / 35) * 180) / Math.PI;
 
   fetch("http://localhost:3000/api/users/burse", {
     method: "POST",
@@ -582,39 +639,7 @@ setInterval(() => {
       costTOB: costTOBN,
       bottom: bottom,
       actual: price,
-      actual1: price,
-      actualGlobal: priceBefore,
-      angle: angleDeg,
-      diagonal: Math.sqrt(Math.pow(costTOBN*25, 2) + 1225),
     }),
   }).catch(() => console.log("Введите 'npm run dev'"));
   cycle++;
 }, cycleTime);
-
-let actualData = null;
-await fetch("http://localhost:3000/api/users/burseGet")
-  .then((response) => {
-    if (!response.ok) {
-      throw new Error(response.status);
-    }
-    return response.json();
-  })
-  .then((data) => {
-    if (data.length > 0) {
-      actualData = data[data.length - 1].actualGlobal;
-    } else {
-      actualData = 1;
-    }
-  });
-let actualGlobal = actualData;
-let actual1 = 1;
-
-// setInterval(() => {
-//   let actual = 1;
-
-  
-
-//   actualGlobal = actual;
-//   actual1 = actual / 25;
-//   ; // ищем градус для диагонали
-// }, 2000);

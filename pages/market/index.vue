@@ -118,6 +118,7 @@ const news_notice_active = ref(false)
 const predict_active = ref(false)
 const socket = ref(null)
 const lastNew = ref(null)
+const newAppearingMargin = ref(0)
 
 function predict(cost) {
   let bn = balanse.value
@@ -148,14 +149,7 @@ function predict(cost) {
 
 onMounted(() => {
 
-  setInterval(() => {
-    if (lastNew.value) {
-      // let sex = getComputedStyle(lastNew.value).height
-      console.log(lastNew.value)
-      // Сделать систему плавного появления события и потом перейти к AI
 
-    }
-  }, 1000);
   if (sessionStorage.getItem('events')) {
     events.value = JSON.parse(sessionStorage.getItem('events'))
   }
@@ -172,6 +166,11 @@ onMounted(() => {
     events.value.push(JSON.parse(event.data))
     news_notice_active.value = true
     sessionStorage.setItem('events', JSON.stringify(events.value))
+    setTimeout(() => {
+      let lastNewHeight = getComputedStyle(lastNew.value[0]).height
+      newAppearingMargin.value = parseFloat(lastNewHeight.replace(/[^\d.-]/g, ''))
+      console.log(lastNewHeight)
+    }, 100);
   }
 
   socket.value.onclose = () => {
@@ -183,7 +182,7 @@ onMounted(() => {
   <div class="flex justify-center">
     <p class="default_text ">Course of Ⓛ-coin! <span class="text-yellow-200">Ⓛ-coin = {{
       actual
-    }} $ </span> </p>
+    }} $ {{ newAppearingMargin }}</span> </p>
   </div>
   <div class="px-20 h-[80vh] flex  justify-around items-center relative overflow-x-hidden">
 
@@ -213,7 +212,7 @@ onMounted(() => {
           </div>
         </div>
 
-        <div class="relative overflow-visible " v-for="cost in costs" :style="{
+        <div class="relative overflow-visible shrink-0" v-for="cost in costs" :style="{
           bottom: cost.bottom * trackVericalPiece + 'px',
           height: cost.costTOB * trackVericalPiece + 'px',
           width: trackHorizontalPiece + 'px'
@@ -269,13 +268,18 @@ onMounted(() => {
         @click="() => { news_active = !news_active; news_notice_active = false }">News <span
           class="bg-red-500 w-2 h-2 absolute rounded-full opacity-0 transition-all"
           :class="[!news_active && news_notice_active ? 'opacity-100' : '']"></span></span>
-      <div class="bg-gray-200 overflow-y-auto box-border max-h-[80vh] rounded p-3 z-10 max-w-[30vw] min-w-[30vw]">
-        <div class="justify-end flex  flex-col-reverse transition-all">
-          <div class="border-b-4 min-h-[20vh] border-dashed border-gray-300 mt-3 relative " v-for="(event, i) in events"
+      <div
+        class="bg-gray-200 overflow-y-auto box-border max-h-[80vh] rounded p-3 z-10 max-w-[30vw] min-w-[30vw] relative" >
+        <!-- <div :style="{ height: `${newAppearingMargin}px` }" class="bg-red-200 absolute top-0 w-[100px]"></div> -->
+
+        <div class="justify-end flex  flex-col-reverse transition-all"
+          :style="{ marginTop: `${newAppearingMargin * -1}px` }">
+          <div class="border-b-4 border-dashed border-gray-300 mt-3 relative bg-red-300" v-for="(event, i) in events"
             :ref="events.length - 1 === i ? 'lastNew' : null">
             <p class="text-2xl bold">{{ event.name }}</p>
             <p class="text-xl">{{ event.text }}</p>
             <p class="text-xl text-right">{{ events.length - 1 === i ? 'now' : event.time }}</p>
+
           </div>
         </div>
       </div>
